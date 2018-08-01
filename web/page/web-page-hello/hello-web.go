@@ -13,11 +13,16 @@ func main() {
 	http.HandleFunc("/hello", handleRequests)
 	serveOn := "localhost:7777"
 	url := "http://" + serveOn + "/hello"
-	fmt.Println("Serving on ", url)
+	fmt.Println("Serving on ", url, " you are allowed to send query in the form of ?q=")
 	log.Fatal(http.ListenAndServe(serveOn, nil))
 }
 
 func handleRequests(w http.ResponseWriter, req *http.Request) {
+	q := req.FormValue("q")
+	message := " no query"
+	if q != "" {
+		message = " query is [" + q + "]"
+	}
 	log.Println("serving", req.URL)
-	fmt.Fprint(w, "Hello ", time.Now())
+	fmt.Fprint(w, "Hello ", message, " ", time.Now().Format("2006-01-02 15:04:05"))
 }
