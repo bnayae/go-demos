@@ -12,9 +12,11 @@ package main
 // https://medium.com/@matryer/writing-middleware-in-golang-and-how-go-makes-it-so-much-fun-4375c1246e81
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"path"
@@ -25,7 +27,7 @@ import (
 
 const dateFormat = "2006-01-02 15:04:05"
 
-//const imageUrl = "https://source.unsplash.com/1600x900?dog"
+const imageUrl = "https://source.unsplash.com/1600x900?dog"
 
 func main() {
 	r := mux.NewRouter()
@@ -36,6 +38,7 @@ func main() {
 	r.HandleFunc("/xml", xmlHandler)
 	r.HandleFunc("/xml-indent", xmlHandler)
 	r.HandleFunc("/file", fileHandler)
+	r.HandleFunc("/file-fix", fileFixHandler)
 	http.Handle("/", r)
 
 	serveOn := "localhost:7771"
@@ -50,6 +53,7 @@ func main() {
 	fmt.Println("5." + url + "xml")
 	fmt.Println("6." + url + "xml-indent")
 	fmt.Println("7." + url + "file")
+	fmt.Println("8." + url + "file-fix")
 
 	srv := &http.Server{
 		Handler: r,
@@ -126,23 +130,26 @@ func xmlHandler(w http.ResponseWriter, req *http.Request) {
 func fileHandler(w http.ResponseWriter, req *http.Request) {
 	fmt.Println("loading image ...")
 
-	// img, _ := os.Create("image.jpg")
-	// defer img.Close()
+	response, err := http.Get(imageUrl)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	// response, err := http.Get(imageUrl)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
+	defer response.Body.Close()
+	logRequest(req) // TODO: Middleware
 
-	// defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body) // ReadCloser -> []byte
+	if err != nil {
+		panic(err.Error())
+	}
 
-	// size, _ := io.Copy(img, response.Body)
-	// fmt.Println("File size: ", size)
+	reader := bytes.NewReader(body) // ReadSeeker
+	http.ServeContent(w, req, "image", time.Now(), reader)
+}
 
-	// logRequest(req) // TODO: Middleware
-
-	// http.ServeFile(w, req, img)
+func fileFixHandler(w http.ResponseWriter, req *http.Request) {
+	fmt.Println("loading image ...")
 
 	logRequest(req) // TODO: Middleware
 	fp := path.Join("images", "squirrel.jpg")
