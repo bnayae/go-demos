@@ -27,7 +27,7 @@ import (
 
 const dateFormat = "2006-01-02 15:04:05"
 
-const imageUrl = "https://source.unsplash.com/1600x900?dog"
+const imageURL = "https://source.unsplash.com/1600x900?dog"
 
 func main() {
 	r := mux.NewRouter()
@@ -130,7 +130,7 @@ func xmlHandler(w http.ResponseWriter, req *http.Request) {
 func fileHandler(w http.ResponseWriter, req *http.Request) {
 	fmt.Println("loading image ...")
 
-	response, err := http.Get(imageUrl)
+	response, err := http.Get(imageURL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
