@@ -11,6 +11,9 @@ package main
 // http://www.gorillatoolkit.org/pkg/mux
 // https://medium.com/@matryer/writing-middleware-in-golang-and-how-go-makes-it-so-much-fun-4375c1246e81
 
+// SVG
+// https://github.com/ajstarks/svgo
+
 import (
 	"bytes"
 	"encoding/json"
@@ -22,6 +25,7 @@ import (
 	"path"
 	"time"
 
+	svg "github.com/ajstarks/svgo"
 	"github.com/gorilla/mux"
 )
 
@@ -39,6 +43,7 @@ func main() {
 	r.HandleFunc("/xml-indent", xmlHandler)
 	r.HandleFunc("/file", fileHandler)
 	r.HandleFunc("/file-fix", fileFixHandler)
+	r.HandleFunc("/svg", svgHandler)
 	http.Handle("/", r)
 
 	serveOn := "localhost:7771"
@@ -54,6 +59,7 @@ func main() {
 	fmt.Println("6." + url + "xml-indent")
 	fmt.Println("7." + url + "file")
 	fmt.Println("8." + url + "file-fix")
+	fmt.Println("9." + url + "svg")
 
 	srv := &http.Server{
 		Handler: r,
@@ -154,6 +160,21 @@ func fileFixHandler(w http.ResponseWriter, req *http.Request) {
 	logRequest(req) // TODO: Middleware
 	fp := path.Join("images", "squirrel.jpg")
 	http.ServeFile(w, req, fp)
+}
+
+func svgHandler(w http.ResponseWriter, req *http.Request) {
+	fmt.Println("creating SVG ...")
+
+	logRequest(req) // TODO: Middleware
+	w.Header().Set("Content-Type", "image/svg+xml")
+	s := svg.New(w)
+	s.Start(500, 500)
+	s.Circle(100, 100, 100, "fill:none;stroke:black")
+	s.Circle(200, 200, 100, "fill:none;stroke:black")
+	s.Circle(300, 300, 100, "fill:none;stroke:black")
+	s.Circle(400, 400, 100, "fill:none;stroke:black")
+	s.Grid(0, 0, 500, 500, 50, "fill:none;stroke:black")
+	s.End()
 }
 
 func logRequest(req *http.Request) {
