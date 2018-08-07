@@ -1,0 +1,22 @@
+// Update command: protoc -I grpc/snippets grpc/snippets/snippets.proto --go_out=plugins=grpc:grpc/snippets
+
+syntax = "proto3";
+
+package snippets;
+
+// The snippet service definition.
+service Snippets {
+  // Sends a greeting
+  rpc SayHello (SnippetRequest) returns (SnippetResponse) {}
+}
+
+// The request message
+message SnippetRequest {
+  string name = 1;
+  int32 sleep = 2;
+}
+
+// The response message.
+message SnippetResponse {
+  string message = 1;
+}
